@@ -1,117 +1,76 @@
-<h2>Stage 1/6: Neuron creator</h2>
+<h2>Stage 2/6: The joy of recognition</h2>
 
 <h2>Theory</h2>
 
-<p>Recognizing digits is a hard task. Today it is a classic example of what machine learning can do. In this first stage, you will write a program that can differentiate between one and zero on a 3x3 grid.</p>
+<p>Let's try to recognize more different numbers—all of them, from 0 to 9. For this, we need to increase the grid from 3x3 to 5x3, the absolute minimum to write all the numbers.</p>
 
-<p>The grid looks like this:</p>
+<p>First, check out <a target="_blank" href="https://www.youtube.com/watch?v=aircAruvnKk" rel="nofollow noopener noreferrer">this great video</a> about this topic. It covers a lot more than you need in this stage and will be recommended in the next stages, too. You don't need to remember everything from this video.</p>
 
-<p><img alt="" height="126" src="https://ucarecdn.com/1d9349d1-e0f0-4ad5-844f-a3a3dbbe4c9b/" width="127"></p>
+<p>Numbers should look like this:</p>
 
-<p>If you want to draw a zero here, you probably would draw this:</p>
+<p><img alt="" height="269" src="https://ucarecdn.com/38618c71-71bc-4b6e-a6a1-280233b03733/" width="441"></p>
 
-<p><img alt="" height="128" src="https://ucarecdn.com/163d834d-32a3-41a0-91bd-cad2c04b944b/" width="126"></p>
+<p>Also, the output no longer can be binary (either less or greater than zero). But can we do the following: if the sum is less than zero then the result should be considered as zero, if the sum is between zero and one then the output value should be considered as one, ... , if the sum is greater than 8 then the output value should be considered as 9? This solution is bad for two reasons:</p>
 
-<p>And if you want to draw a one here, you probably would draw this:</p>
+<ol>
+	<li>The distribution of the output numbers is uneven. Most of the number line is dedicated to only two numbers: 0 and 9. Generally, it is impossible to divide one number line into 9 even parts. (It is possible if the part from -1 to 10 repeats forever, but this would be a total mess.)</li>
+	<li>In our case, some numbers appear in the number line close to each other but look very different. For example, 7 and 8, as well as 1 and 2, are very different but there’s just a single unit between them in the output number line,. There is another situation in which some similar numbers lie far from each other. For example, 6 and 8 which differ, in only 1 cell. Generally, it is impossible to rearrange them in a way that everything similar is near each other and everything dissimilar is far from each other.</li>
+</ol>
 
-<p><img alt="" height="130" src="https://ucarecdn.com/80adac5a-5cfa-4102-84ad-a9ceef4af8e3/" width="129"></p>
+<p>The solution for this is multiple output neurons. The best way of doing it would be a single output neuron per each possible output value. In our case, that would be 10 output neurons.</p>
 
-<p>Suppose you want to write a program that can take 9 numbers corresponding to these 9 cells (they contain 1 if the corresponding cell is blue and 0 if the corresponding cell is white) and output 1 or 0. It can be pretty easy, just check all cells around the middle, and output 0, else check for the straight vertical line in the middle and output 1, right?</p>
+<p>Every input neuron should be connected to every output neuron like in the picture below:</p>
 
-<p>Well, it isn't that easy. The general problem in recognizing <strong>handwritten </strong>digits is that every digit can be written differently. For example, zeros may be written like this:</p>
-
-<p><img alt="" height="129" src="https://ucarecdn.com/f9ebdf3d-ab90-4bcf-b07d-c563eeac288d/" width="492"></p>
-
-<p>And ones may be written like this:</p>
-
-<p><img alt="" height="134" src="https://ucarecdn.com/2e456d56-9c52-45c1-9cb1-322fb53a6131/" width="492"></p>
-
-<p>Your program still should recognize these as zeros or ones.</p>
-
-<p>Machine learning uses neural networks to perform difficult tasks like this. Every network consists of neurons. It always has input neurons and output neurons. Except for the input neurons, every other neuron performs simple mathematical calculations. It sums up weights of the connections multiplied by values of the neurons corresponding to these connections. Let's see an example:</p>
-
-<p><img alt="" height="250" src="https://ucarecdn.com/b88d806a-4bbf-4d90-b544-820192c72b1f/" width="270"></p>
-
-<p>In this example, there are four neurons. Note that $w$ in the graph stands for a <strong>weight </strong>of the edge and $ a $ stands for a <strong>value of the neuron</strong>. Three of them are input neurons (it is $ a_1 $, $ a_2 $, $ a_3 $) and the last one is the output neuron ($ a_4 $). The $ a_4 $ neuron performs the mathematical operations described above. In mathematical notation it looks like this:</p>
-
-<p>$ a_4 = a_1 * w_1 + a_2 * w_2 + a_3 * w_3 $</p>
-
-<p>Note that if all of the weights or all of the neurons equal zero, then the value of the output neuron also equals zero. If the weights and input neurons are positive, then the output neuron is also positive, and the same goes for negative values. But in practice the value of the neuron should be almost always be centered not around zero but around another value, called a <strong>bias</strong>. For this reason, a special input neuron should be added with value 1 with weight $ b $ (from the word bias). Take a look at the upgraded graph below:</p>
+<p><img alt="" height="493" src="https://ucarecdn.com/811bc287-2874-4720-b214-3fcea852cc23/" width="464"></p>
 
 <p> </p>
 
-<p><img alt="" height="355" src="https://ucarecdn.com/5b20fc2e-e40d-4e97-9049-1297e9378d44/" width="271"></p>
-
-<p>Now, in mathematical notation it looks like this:</p>
-
-<p>$ a_4 = a_1 * w_1 + a_2 * w_2 + a_3 * w_3 + b $</p>
+<p>As you can see, there are a lot of lines, representing weights. In fact, there should be exactly 16 * 10 = 160 weights total. Also, you may notice the numbers 1 and 2 on the top of the neuron. This is not exponentiation, but a special mark to indicate the layer number. The layer is a vertical line of neurons. This network above has two layers, but in the next stage, we consider a network with more than two layers. So, if you see this notation in the formulas: $ a^2_6 $ you can say that this is a neuron from the second layer and it is 6th from the top.</p>
 
 <h2>Description</h2>
 
-<p>In this stage, you need to write a function that simulates a neural network with 9 input neurons and 1 output neuron. This neural network should recognize 0 or 1 from the 3x3 grid. So, every cell from the grid is considered as input neuron. If the cell is blue then the corresponding neuron equals 1, and if the cell is white then equals 0. For example, this grid setup:</p>
+<p>In this stage, you should write such a network with two layers. The weights are defined in a pretty simple way: 1 for a blue and -1 for a white. For the first output neuron, you should set 15 weights for the number 1, for the second output neuron you should set another 15 weights for the number 2 etc and the last output neuron should recognize the number 0. In the end, you should choose the maximum out of all output neurons and it will be the result of the recognition.</p>
 
-<p><img alt="" height="143" src="https://ucarecdn.com/7c450421-9edb-4f48-b68f-96bd80cdfaf1/" width="140"></p>
+<p>Now take note that the best result of recognition of the number 1 is 5, but the result of the recognition of the number 8 is 13 since the number 1 has 5 blue points and the number 8 has 13 blue points. To equalize all the numbers you need a bias. It should be:</p>
 
-<p>Should be mapped to the neurons like this:</p>
-
-<p><img alt="" height="152" src="https://ucarecdn.com/df521d20-5488-4b44-a7a3-b6e0f7ee7091/" width="149"></p>
-
-<p>And it should correspond with this neural network (the values of the neurons are written to the left of the neurons):</p>
-
-<p> </p>
-
-<p><img alt="" height="521" src="https://ucarecdn.com/1ac98cf2-034b-4214-800c-cecef5e94347/" width="242"></p>
-
-<p>For actual machine learning, the computer should figure out the best weights and biases on its own (using an algorithm written by a programmer, of course), but in this stage, you will not write this algorithm. Instead, use these pre-calculated (pretty accurate) weights:</p>
-
-<p>$ w_1 = 2, w_2 = 1, w_3 = 2, w_4 = 4, w_5 = -4, $</p>
-
-<p>$ w_6 = 4, w_7 = 2, w_8 = -1, w_9 = 2, b = -5 $</p>
-
-<p>For these weights, you can interpret a value of the $ a_{10} $ neuron pretty easily. If it is positive then the result is zero, else the result is one. For example, for the grid above:</p>
-
-<p>$ a_{10} = 1 * 2 + 1 * 1 + 0 * 2 + 1 * 4+ 0 * -4+ 1 * 4 + 0 * 2 + 1 * -1 + 0 * 2 -5 = 5 $</p>
-
-<p>The result is positive, so the number above is 0. Another example, for this grid:</p>
-
-<p><img alt="" height="157" src="https://ucarecdn.com/7915c5b5-672d-4092-aa16-dc6f5ff905f4/" width="157"></p>
-
-<p> </p>
-
-<p>$ a_{10}=1∗2+1∗1+0∗2+0∗4+1∗−4+0∗4+0∗2+1∗−1+0∗2−5=−7 $</p>
-
-<p>The result is negative, so the number above is 1. It's pretty fantastic that this simple math can differentiate zero or one on the 3x3 image!</p>
+<ol>
+	<li>6 for 1</li>
+	<li>0 for 3, 5</li>
+	<li>1 for 2</li>
+	<li>2 for 4</li>
+	<li>3 for 7</li>
+	<li>-2 for 8</li>
+	<li>-1 for 6, 9, 0</li>
+</ol>
 
 <h2>Output examples</h2>
-
-<p>The example below shows how your output should look.</p>
 
 <pre><code class="java">Input grid:
 _X_
 _X_
 XX_
-This number is 1</code></pre>
-
-<p> </p>
-
-<pre><code class="java">Input grid :
+XX_
 _XX
-X_X
-XXX
-This number is 0</code></pre>
-
-<p> </p>
-
-<pre><code class="java">Input grid:
-_X_
-_X_
-X__
 This number is 1</code></pre>
 
 <p> </p>
 
 <pre><code class="java">Input grid:
-_X_
+XX_
+__X
+__X
+X__
+XXX
+This number is 2
+</code></pre>
+
+<p> </p>
+
+<pre><code class="java">Input grid:
+XXX
 X_X
-_X_
-This number is 0</code></pre>
+__X
+__X
+__X
+This number is 7
+</code></pre>
