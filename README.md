@@ -1,76 +1,95 @@
-<h2>Stage 2/6: The joy of recognition</h2>
+<h2>Stage 3/6: Learning time</h2>
 
-<h2>Theory</h2>
+<h2 style="text-align: center;">Theory</h2>
 
-<p>Let's try to recognize more different numbers—all of them, from 0 to 9. For this, we need to increase the grid from 3x3 to 5x3, the absolute minimum to write all the numbers.</p>
+<p>In this stage, you will develop a neural network that can perform simple learning.</p>
 
-<p>First, check out <a target="_blank" href="https://www.youtube.com/watch?v=aircAruvnKk" rel="nofollow noopener noreferrer">this great video</a> about this topic. It covers a lot more than you need in this stage and will be recommended in the next stages, too. You don't need to remember everything from this video.</p>
+<p>Let's pretend we don't know what ideal weights and biases should look like. The neural network should find them from scratch, on its own, or at least get something reasonable and similar to the ideal weights you've programmed in the previous stage.</p>
 
-<p>Numbers should look like this:</p>
+<p>First, note that your output neurons can be different: they can be less than zero or they can be greater than one. In the previous stage, this was normal, as biases helped us to equate the values of output neurons of numbers with different amount of filled cells. For example, for number 8, we reduced the resulting value of the output neuron using one bias and increased it for number 1 using another bias.</p>
 
-<p><img alt="" height="269" src="https://ucarecdn.com/38618c71-71bc-4b6e-a6a1-280233b03733/" width="441"></p>
+<p>Usually, neural neurons use values from 0 to 1. So, first, the initial neuron value is calculated as in the previous stage, and then this value is changed to fit the range from 0 to 1. The <a target="_blank" href="https://en.wikipedia.org/wiki/Sigmoid_function" rel="nofollow noopener noreferrer">Sigmoid function</a> is the best function for that. Check out <a target="_blank" href="https://www.youtube.com/watch?v=aircAruvnKk" rel="nofollow noopener noreferrer">this video</a> from the previous stage to better understand it. It is shortened to <span class="math-tex">\(S(x)\)</span> in formulas.</p>
 
-<p>Also, the output no longer can be binary (either less or greater than zero). But can we do the following: if the sum is less than zero then the result should be considered as zero, if the sum is between zero and one then the output value should be considered as one, ... , if the sum is greater than 8 then the output value should be considered as 9? This solution is bad for two reasons:</p>
+<p style="text-align: center;"><span class="math-tex">\(Sigmoid(x) = S(x) = 1 / (1 + e ^{-x}) \)</span></p>
 
-<ol>
-	<li>The distribution of the output numbers is uneven. Most of the number line is dedicated to only two numbers: 0 and 9. Generally, it is impossible to divide one number line into 9 even parts. (It is possible if the part from -1 to 10 repeats forever, but this would be a total mess.)</li>
-	<li>In our case, some numbers appear in the number line close to each other but look very different. For example, 7 and 8, as well as 1 and 2, are very different but there’s just a single unit between them in the output number line,. There is another situation in which some similar numbers lie far from each other. For example, 6 and 8 which differ, in only 1 cell. Generally, it is impossible to rearrange them in a way that everything similar is near each other and everything dissimilar is far from each other.</li>
-</ol>
+<h2 style="text-align: center;">Delta Rule</h2>
 
-<p>The solution for this is multiple output neurons. The best way of doing it would be a single output neuron per each possible output value. In our case, that would be 10 output neurons.</p>
+<p>The algorithm you should implement is called <strong>the Delta rule</strong>. It's very simple. For every iteration, you should find the difference of the current weight between the current iteration and the next iteration. Here is the formula:</p>
 
-<p>Every input neuron should be connected to every output neuron like in the picture below:</p>
+<p style="text-align: center;"><span class="math-tex">\(\Delta w_{(a_i, a_j)} = \eta * a_i * (a_j^{ideal} - a_j)\)</span></p>
 
-<p><img alt="" height="493" src="https://ucarecdn.com/811bc287-2874-4720-b214-3fcea852cc23/" width="464"></p>
+<p>where <span class="math-tex">\( \Delta w_{(a_i, a_j)} \)</span> is a difference in weight between <span class="math-tex">\(a_i \)</span>and <span class="math-tex">\(a_j \)</span>. <span class="math-tex">\(a_j^{ideal}\)</span> is an ideal value. <span class="math-tex">\(\eta\)</span> is the learning rate coefficient; it can vary from 0.1 or less to 10 or more. In this stage use the 0.5 value. You can calculate</p>
 
-<p> </p>
+<p style="text-align: center;"><img alt="" height="385" src="https://ucarecdn.com/2d419cbe-0aef-49f8-ba3c-b8f014ae511f/" width="237"></p>
 
-<p>As you can see, there are a lot of lines, representing weights. In fact, there should be exactly 16 * 10 = 160 weights total. Also, you may notice the numbers 1 and 2 on the top of the neuron. This is not exponentiation, but a special mark to indicate the layer number. The layer is a vertical line of neurons. This network above has two layers, but in the next stage, we consider a network with more than two layers. So, if you see this notation in the formulas: $ a^2_6 $ you can say that this is a neuron from the second layer and it is 6th from the top.</p>
+<p>For example, these 15 neurons are ideal neurons. They all, packed together, form the ideal representation of number 2. You know that this is 2 since you want your neural network to think that any image close to this should be considered as 2. Same goes with other numbers. In this ideal representation, all filled cells should be equal to 1 and all empty cells should be equal to 0.</p>
+
+<p>Remember, the ideal weights are not the ideal outputs. You can't use the ideal weights, the programm should get them on its own. However, the ideal neurons should be used in the process of neural learning.</p>
+
+<p>After that, you can calculate the next value for this weight. Use the following formula. Notice that the number at the top right corner is the <strong>generation </strong>number of this neural network. Usually, when all the weights are updated to the new ones, the generation number increases by 1. And <span class="math-tex">\(mean\)</span> means that you should calculate the mean value among all differences (it can be more than one; in this stage, there should be 10 differences, one for each number from 0 to 9).</p>
+
+<p style="text-align: center;"><span class="math-tex">\(w_{(a_i, a_j)}^{n+1} = w_{(a_i, a_j)}^{n} + \Delta w_{(a_i, a_j)}^{mean}\)</span></p>
+
+<p style="text-align: center;"><img alt="" height="503" src="https://ucarecdn.com/b9ff00a3-7eb5-49c9-81fe-15022307c385/" width="365"></p>
+
+<p>This diagram shows that this time you need 10 output neurons (they are marked with <span class="math-tex">\(o\)</span> letter) and 15 input neurons with a bias connected to every output neuron. So, you should end up with 160 weights. As the learning process starts all these weights should be initialized to random Gaussian values.</p>
+
+<p>Let's study an example.</p>
+
+<p>Suppose the weights from input neurons to <span class="math-tex">\(o_2\)</span> neuron are equal (the bias is the last one) to the following array:<span class="math-tex">\(\{0.21, 0.32, -0.92, 0.03, -0.34, -0.21, 0.93, 0.49, 0.31, 0.01, -0.79, 0.61, 0.73, -0.47, -0.44, 0.39\}\)</span></p>
+
+<p><strong>Let's test the number 0.</strong></p>
+
+<p>First thing you should do is actually calculate the output neurons. For example, the <span class="math-tex">\(o_2\)</span> neuron should be calculated as follows:</p>
+
+<p style="text-align: center;"><span class="math-tex">\(\begin{aligned} o_2 = S\left(a_1 * w_{(a_1, o_2)} + a_2 * w_{(a_2, o_2)} + ... + a_{15} * w_{(a_{15}, o_2)} + b * w_{(b, o_2)}\right) = \\ S(0.21 * 1 + 0.32 * 1 -0.92 *1 +0.03*1 -0.34 * 0 - 0.21*1\\ +0.93*1+0.49*0+0.31*1+0.01*1-0.79*0+0.61*1\\ +0.73*1-0.47*1-0.44 *1+0.39*1) = S(1.50)=0.81 \end{aligned}\)</span></p>
+
+<p>For the input number 0 we get the following. Remember, that for <span class="math-tex">\(o_2\)</span> the ideal neurons form the ideal number 2.</p>
+
+<p><span class="math-tex">\(\Delta w_{(a_1, o_2)} = \eta * a_1 * (o_2^{ideal} - o_2) = 0.5 * 1 * (1-0.81) = 0.095\)</span></p>
+
+<p><span class="math-tex">\(\Delta w_{(a_2, o_2)} = \Delta w_{(a_3, o_2)} = \Delta w_{(a_6, o_2)} = \Delta w_{(a_7, o_2)} = \Delta w_{(a_9, o_2)} = \Delta w_{(a_{10}, o_2)} = \Delta w_{(a_{13}, o_2)} = \Delta w_{(a_{14}, o_2)} = \Delta w_{(a_{15}, o_2)} = 0.5 * 1 * (1-0.81) = 0.095\)</span></p>
+
+<p><span class="math-tex">\(\Delta w_{(a_4, o_2)} = \Delta w_{(a_{12}, o_2)} = 0.5 * 1 * (0-0.81) = -0.405\)</span></p>
+
+<p><span class="math-tex">\(\Delta w_{(a_5, o_2)} = \Delta w_{(a_8, o_2)} = \Delta w_{(a_{11}, o_2)} = 0.5 * 0 * (...) = 0\)</span></p>
+
+<p>After processing each output neuron you process each weight once. The same should be done for every number from 0 (just calculated) to 9. After processing you should end up with ten <span class="math-tex">\(\Delta w\)</span> for every weight. Notice that biases are not used in this algorithm, but they'll become useful in the future.</p>
+
+<p>So, the next step is to calculate <span class="math-tex">\(\Delta w^{mean}\)</span> for every weight. Suppose, for the <span class="math-tex">\(w_{(a_1, o_2)}\)</span> it will be 0.08.</p>
+
+<p><span class="math-tex">\(\Delta w_{(a_1, o_2)}^{mean} = (0.095 + ... ) / 10 = 0.08\)</span></p>
+
+<p>The last step for this generation is to update all the weights.</p>
+
+<p><span class="math-tex">\(w_{(a_1, o_2)} = w_{(a_1, o_2)} + \Delta w_{(a_1, o_2)}^{mean} = 0.21 + 0.08 = 0.29\)</span></p>
+
+<p>You should repeat this process for a while. It's said that every update of the weights is a new generation of the network. The best approach is to repeat until average <span class="math-tex">\(\Delta w^{mean}\)</span> become quite small.</p>
 
 <h2>Description</h2>
 
-<p>In this stage, you should write such a network with two layers. The weights are defined in a pretty simple way: 1 for a blue and -1 for a white. For the first output neuron, you should set 15 weights for the number 1, for the second output neuron you should set another 15 weights for the number 2 etc and the last output neuron should recognize the number 0. In the end, you should choose the maximum out of all output neurons and it will be the result of the recognition.</p>
+<p>In this stage, you should implement this algorithm. Initially, you can set all the weights to zero, but the best way to initialize the weights is to set them as random Gaussian numbers.</p>
 
-<p>Now take note that the best result of recognition of the number 1 is 5, but the result of the recognition of the number 8 is 13 since the number 1 has 5 blue points and the number 8 has 13 blue points. To equalize all the numbers you need a bias. It should be:</p>
+<p>How long should it take for programs to learn to get a good result? You can try with 10, 100, and 1000 generations. Generally, you can stop the process if your weights aren't changing generation after generation, or if they’re changing only by very little. That means you've hit a local minimum.</p>
 
-<ol>
-	<li>6 for 1</li>
-	<li>0 for 3, 5</li>
-	<li>1 for 2</li>
-	<li>2 for 4</li>
-	<li>3 for 7</li>
-	<li>-2 for 8</li>
-	<li>-1 for 6, 9, 0</li>
-</ol>
+<p>You should separate the learning logic and guessing logic (they can be two different items in the terminal). After the learning process, you should save your network into the file using serialization and use this file when guessing.</p>
 
-<h2>Output examples</h2>
+<p>Tests on this stage only check for guessing numbers, not learning so you need to make sure the network is loading correctly at the start of the program. This means tests never check option 1 from the output example below.</p>
 
-<pre><code class="java">Input grid:
-_X_
-_X_
+<h2>Output example</h2>
+
+<pre><code class="java">1. Learn the network
+2. Guess a number
+Your choice: 1
+Learning...
+Done! Saved to the file.
+1. Learn the network
+2. Guess a number
+Your choice: 2
+Input grid:
 XX_
-XX_
+__X
 _XX
-This number is 1</code></pre>
-
-<p> </p>
-
-<pre><code class="java">Input grid:
-XX_
-__X
-__X
 X__
 XXX
-This number is 2
-</code></pre>
-
-<p> </p>
-
-<pre><code class="java">Input grid:
-XXX
-X_X
-__X
-__X
-__X
-This number is 7
-</code></pre>
+This number is 2</code></pre>

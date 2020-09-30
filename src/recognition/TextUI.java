@@ -3,34 +3,39 @@ package recognition;
 import java.util.Scanner;
 
 public class TextUI {
-    private final int[][][] weights = {
-            {{1, 1, 1}, {1, -1, 1}, {1, -1, 1}, {1, -1, 1}, {1, 1, 1}},
-            {{-1, 1, -1}, {-1, 1, -1}, {-1, 1, -1}, {-1, 1, -1}, {-1, 1, -1},},
-            {{1, 1, 1}, {-1, -1, 1}, {1, 1, 1}, {1, -1, -1}, {1, 1, 1}},
-            {{1, 1, 1}, {-1, -1, 1}, {1, 1, 1}, {-1, -1, 1}, {1, 1, 1}},
-            {{1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, -1, 1}, {-1, -1, 1}},
-            {{1, 1, 1}, {1, -1, -1}, {1, 1, 1}, {-1, -1, 1}, {1, 1, 1}},
-            {{1, 1, 1}, {1, -1, -1}, {1, 1, 1}, {1, -1, 1}, {1, 1, 1}},
-            {{1, 1, 1}, {-1, -1, 1}, {-1, -1, 1}, {-1, -1, 1}, {-1, -1, 1}},
-            {{1, 1, 1}, {1, -1, 1}, {1, 1, 1}, {1, -1, 1}, {1, 1, 1}},
-            {{1, 1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, -1, 1}, {1, 1, 1}},
-    };
-    private final int[] biases = {-1, 6, 1, 0, 2, 0, -1, 3, -2, -1};
+    private final double[][][] weights = new double[10][5][3];
+    private final double[] biases = new double[10];
     private final Scanner scn = new Scanner(System.in);
     
-    public void start() {
-        System.out.println("Input grid:");
-        int[][] inputGrid = new int[5][3];
-        for (int row = 0; row < 5; ++row) {
-            String inRow = scn.nextLine();
-            for (int col = 0; col < 3; ++col) {
-                if (inRow.charAt(col) == 'X' || inRow.charAt(col) == 'x') {
-                    inputGrid[row][col] = 1;
+    public TextUI(double[][] learnedWeights, double[] biases) {
+        for (int i = 0; i < 10; ++i) {
+            int n = 0;
+            for (int row = 0; row < 5; ++row) {
+                for (int col = 0; col < 3; ++col, ++n) {
+                    weights[i][row][col] = learnedWeights[i][n];
                 }
             }
         }
-        int digit = calcDigit(inputGrid);
-        System.out.println("The number is " + digit);
+        for (int i = 0; i < 10; ++i) {
+            this.biases[i] = biases[i];
+        }
+    }
+    
+    public void start() {
+        while (true) {
+            System.out.println("Input grid:");
+            int[][] inputGrid = new int[5][3];
+            for (int row = 0; row < 5; ++row) {
+                String inRow = scn.nextLine();
+                for (int col = 0; col < 3; ++col) {
+                    if (inRow.charAt(col) == 'X' || inRow.charAt(col) == 'x') {
+                        inputGrid[row][col] = 1;
+                    }
+                }
+            }
+            int digit = calcDigit(inputGrid);
+            System.out.println("The number is " + digit);
+        }
     }
     
     private int calcDigit(int[][] grid) {
