@@ -1,83 +1,76 @@
 package recognition;
 
-import java.util.Random;
+import java.io.Serializable;
+import java.util.List;
 
-public class NeuralNetwork {
-    private int gens;
-    private double[][] weights = new double[10][16];
-    private double[] biases = new double[10];
-    private double[] outputNeurons = new double[10];
-    private final double learnRateCoeff = 0.5;
+import static recognition.Matrix.*;
+
+public class NeuralNetwork implements Serializable {
     
-    private final int[][] idealNeurons = {
-            {1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1},
-            {0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0},
-            {1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1},
-            {1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
-            {1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1},
-            {1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1},
-            {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1},
-            {1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1},
-            {1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1},
-            {1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1}
-    };
+    private static final long serialVersionUID = 2L;
+    private static final int ins = 15;
+    private static final int outs = 10;
+    
+    private int gens;
+    private double[][] weights = new double[ins][outs];
+    private double[][] biases = new double[outs][1];
+    private final double learnRate = 0.5;
+    
+    private final List<TrainingSample> trainingSamples =
+            TrainingData.getFromFile("TrainingData.csv");
+    
+    private final double[][] idealOuts = Matrix.identity(outs);
     
     public NeuralNetwork(int gens) {
         this.gens = gens;
-        Random r = new Random();
-        for (int i = 0; i < 10; ++i) {
-            biases[i] = r.nextGaussian();
-            for (int j = 0; j < 16; ++j) {
-                weights[i][j] = r.nextGaussian();
-            }
-        }
+        gaussianRand(weights);
+        gaussianRand(biases);
         process();
     }
     
     private void process() {
-        for (; gens > 0 ; --gens) {
-            for (int i = 0; i < 10; ++i) {
-                updateWeights(i);
-            }
-        }
-        new TextUI(weights, biases).start();
-    }
-    
-    
-    private void updateWeights(int n) {
-        double[] neuronOutputs = new double[10];
-        for (int i = 0; i < 10; ++i) {
-            for (int j = 0; j < 15; ++j) {
-                neuronOutputs[i] += weights[i][j] * idealNeurons[n][j];
-            }
-            neuronOutputs[i] += biases[i];
-            neuronOutputs[i] = sigmoid(neuronOutputs[i]);
-        }
-        double[][] weightVariations = new double[15][10];
-        for (int i = 0; i < 15; ++i) {
-            for (int j = 0; j < 10; ++j) {
-                weightVariations[i][j] = learnRateCoeff * idealNeurons[n][i]
-                        * (idealNeurons[j][i] - neuronOutputs[j]);
-            }
-        }
-        double[] weightMeanVariations = new double[15];
-        for (int i = 0; i < 15; ++i) {
-            double sum = 0.0;
-            for (int j = 0; j < 10; ++j) {
-                sum += weightVariations[i][j];
-            }
-            weightMeanVariations[i] = sum / 10.0;
-        }
-        for (int i = 0; i < 15; ++i) {
-            weights[n][i] += weightMeanVariations[i];
+        for (; gens > 0; --gens) {
+            updateWeights();
         }
     }
     
-    private static double sigmoid(double x) {
-        return 1.0 / (1 + Math.pow(Math.E, -x));
+    private void updateWeights() {
+        double[][] weightVariations = new double[ins][outs];
+        
+        for (int n = 0; n < trainingSamples.size(); ++n) {
+            double[][] outputs = calcOutputs(
+                    transpose(trainingSamples.get(n).getInput()));
+            
+            double[][] idealOut = transpose(getRow(idealOuts, n));
+            double[][] outDiff = subtract(idealOut, outputs);
+            for (int i = 0; i < outDiff.length; ++i) {
+                double[][] variation = transpose(trainingSamples.get(n).getInput());
+                variation = dot(learnRate, variation);
+                variation = dot(outDiff[i][0], variation);
+                weightVariations = addToCol(weightVariations, variation, i);
+            }
+        }
+        
+        weightVariations = dot(1.0 / outs, weightVariations);
+        weights = add(weights, weightVariations);
     }
     
-    public static void main(String[] args) {
-        new NeuralNetwork(100000);
+    private double[][] calcOutputs(double[][] inputs) {
+        double[][] outputs = dot(transpose(weights),inputs);
+        return sigmoid(add(outputs, biases));
+    }
+    
+    public int recognize(double[] input) {
+        double[][] output = calcOutputs(
+                transpose(matrify(input)));
+        double brightestResult = output[0][0];
+        int brightestNeuron = 0;
+        for (int i = 1; i < outs; ++i) {
+            if (output[i][0] > brightestResult) {
+                brightestResult = output[i][0];
+                brightestNeuron = i;
+            }
+        }
+        return brightestNeuron;
     }
 }
